@@ -1,0 +1,199 @@
+/* =========================================================
+   SCRIPT.JS - Sejarah-Mu Landing Page & Halaman Belajar
+   =========================================================
+   File ini berisi JavaScript sederhana untuk:
+   1. Hamburger menu (mobile)
+   2. Smooth scroll saat klik menu
+   3. Animasi scroll (elemen muncul saat discroll)
+   4. Fallback gambar gagal dimuat
+   5. Navigasi sidebar (halaman belajar)
+   ========================================================= */
+
+// ===================== HAMBURGER MENU =====================
+// Fungsi untuk membuka/menutup menu di tampilan mobile
+function inisialisasiHamburger() {
+  var hamburger = document.getElementById('hamburger');
+  var navMenu = document.getElementById('navMenu');
+
+  // Pastikan elemen ada sebelum menambahkan event
+  if (hamburger && navMenu) {
+    hamburger.addEventListener('click', function () {
+      // Toggle class 'active' pada hamburger (untuk animasi X)
+      hamburger.classList.toggle('active');
+      // Toggle class 'terbuka' pada menu (untuk tampil/sembunyi)
+      navMenu.classList.toggle('terbuka');
+    });
+
+    // Tutup menu saat salah satu link diklik
+    var navLinks = navMenu.querySelectorAll('.nav-link');
+    navLinks.forEach(function (link) {
+      link.addEventListener('click', function () {
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('terbuka');
+      });
+    });
+  }
+}
+
+// ===================== SMOOTH SCROLL =====================
+// Smooth scroll sudah diatur via CSS (scroll-behavior: smooth)
+// Tapi kita tambahkan penutupan menu saat klik link
+function inisialisasiSmoothScroll() {
+  // Tidak perlu kode tambahan karena CSS sudah menangani
+  // Fungsi ini disediakan jika ingin menambahkan logika lain
+}
+
+// ===================== ANIMASI SCROLL =====================
+// Menggunakan Intersection Observer untuk mendeteksi elemen
+// yang masuk ke viewport, lalu menambahkan class 'tampil'
+function inisialisasiAnimasiScroll() {
+  // Pilih semua elemen yang ingin dianimasikan
+  var elemenAnimasi = document.querySelectorAll('.animasi-muncul');
+
+  // Jika browser tidak mendukung Intersection Observer, langsung tampilkan semua
+  if (!('IntersectionObserver' in window)) {
+    elemenAnimasi.forEach(function (el) {
+      el.classList.add('tampil');
+    });
+    return;
+  }
+
+  // Buat observer
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      // Jika elemen terlihat di viewport
+      if (entry.isIntersecting) {
+        entry.target.classList.add('tampil');
+        // Berhenti mengamati elemen yang sudah muncul
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    // Elemen dianggap terlihat saat 15% bagiannya masuk viewport
+    threshold: 0.15
+  });
+
+  // Amati setiap elemen
+  elemenAnimasi.forEach(function (el) {
+    observer.observe(el);
+  });
+}
+
+// ===================== FALLBACK GAMBAR =====================
+// Jika gambar gagal dimuat, tampilkan placeholder
+function inisialisasiFallbackGambar() {
+  var semuaGambar = document.querySelectorAll('img');
+
+  semuaGambar.forEach(function (img) {
+    img.addEventListener('error', function () {
+      // Sembunyikan gambar yang gagal
+      this.style.display = 'none';
+      // Cari sibling placeholder yang ada di sebelahnya
+      var placeholder = this.nextElementSibling;
+      if (placeholder && placeholder.classList.contains('image-placeholder')) {
+        placeholder.style.display = 'flex';
+      }
+    });
+  });
+}
+
+// ===================== NAVIGASI SIDEBAR (HALAMAN BELAJAR) =====================
+// Fungsi untuk menangani klik bab di sidebar halaman belajar
+function inisialisasiSidebarBelajar() {
+  var babItems = document.querySelectorAll('.bab-item');
+  var babKontens = document.querySelectorAll('.bab-konten');
+  var subbabItems = document.querySelectorAll('.subbab-item');
+  var subbabLists = document.querySelectorAll('.subbab-list');
+  var sidebarToggle = document.querySelector('.sidebar-toggle');
+  var sidebar = document.querySelector('.belajar-sidebar');
+
+  // Jika tidak ada elemen bab, berarti bukan halaman belajar
+  if (babItems.length === 0) return;
+
+  // Toggle sidebar di mobile
+  if (sidebarToggle && sidebar) {
+    sidebarToggle.addEventListener('click', function () {
+      sidebar.classList.toggle('terbuka');
+      // Ganti teks tombol
+      if (sidebar.classList.contains('terbuka')) {
+        sidebarToggle.textContent = '✕ Tutup Menu Bab';
+      } else {
+        sidebarToggle.textContent = '📖 Buka Menu Bab';
+      }
+    });
+  }
+
+  // Fungsi untuk menampilkan bab tertentu
+  function tampilkanBab(indexBab) {
+    // Sembunyikan semua konten bab
+    babKontens.forEach(function (konten) {
+      konten.classList.remove('aktif');
+    });
+
+    // Hapus class active dari semua item bab
+    babItems.forEach(function (item) {
+      item.classList.remove('active');
+    });
+
+    // Tutup semua subbab
+    subbabLists.forEach(function (list) {
+      list.classList.remove('terbuka');
+    });
+
+    // Tampilkan konten bab yang dipilih
+    if (babKontens[indexBab]) {
+      babKontens[indexBab].classList.add('aktif');
+    }
+
+    // Tandai item bab yang aktif
+    if (babItems[indexBab]) {
+      babItems[indexBab].classList.add('active');
+      // Buka subbab dari bab yang aktif
+      var subbabDariBab = babItems[indexBab].nextElementSibling;
+      if (subbabDariBab && subbabDariBab.classList.contains('subbab-list')) {
+        subbabDariBab.classList.add('terbuka');
+      }
+    }
+
+    // Di mobile, tutup sidebar setelah memilih bab
+    if (sidebar && window.innerWidth <= 768) {
+      sidebar.classList.remove('terbuka');
+      if (sidebarToggle) {
+        sidebarToggle.textContent = '📖 Buka Menu Bab';
+      }
+    }
+  }
+
+  // Event klik pada item bab
+  babItems.forEach(function (item, index) {
+    item.addEventListener('click', function () {
+      tampilkanBab(index);
+    });
+  });
+
+  // Event klik pada subbab (scroll ke subbab yang sesuai dalam konten)
+  subbabItems.forEach(function (subbab) {
+    subbab.addEventListener('click', function () {
+      var targetId = this.getAttribute('data-target');
+      if (targetId) {
+        var targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+  });
+
+  // Tampilkan bab pertama secara default
+  tampilkanBab(0);
+}
+
+// ===================== INISIALISASI SEMUA =====================
+// Jalankan semua fungsi saat halaman sudah siap
+document.addEventListener('DOMContentLoaded', function () {
+  inisialisasiHamburger();
+  inisialisasiSmoothScroll();
+  inisialisasiAnimasiScroll();
+  inisialisasiFallbackGambar();
+  inisialisasiSidebarBelajar();
+});
